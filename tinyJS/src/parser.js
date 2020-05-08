@@ -39,7 +39,7 @@ class Parser {
   }
 
   stmtList() {
-    let stmtToks = [
+    const stmtToks = [
       Lexer.TOK_IF,
       Lexer.TOK_WHILE,
       Lexer.TOK_VAR,
@@ -48,7 +48,7 @@ class Parser {
       Lexer.TOK_ID,
       Lexer_TOK_PRINT,
     ];
-    let stmts = [];
+    const stmts = [];
     while (this.tokens.length) {
       if (stmtToks.indexOf(this.peek()) > -1) stmts.push(this.stmt());
       else if (this.peek() === Lexer.TOK_END || this.peek() === Lexer.TOK_ELSE)
@@ -105,19 +105,153 @@ class Parser {
         exp: exp,
         stmts: stmts,
       });
-    } else if(this.peek() === Lexer.TOK_IF) {
-	this.consume(Lexer.TOK_IF) {
-	exp = this.expr();
-		this.consume(Lexer.TOK_DO);
-		stmts = this.stmtList();
-		if(this.peek() === Lexer.TOK_END)
-			this.consume(Lexer.TOK_END);
-		else {
-			this.consume(Lexer.TOK_ELSE);
-			let stmtsElse = this.stmtList();
-			this.consume(Lexer.TOK_END);
-		}
-	}
+    } else if (this.peek() === Lexer.TOK_IF) {
+      this.consume(Lexer.TOK_IF);
+      exp = this.expr();
+      this.consume(Lexer.TOK_DO);
+      stmts = this.stmtList();
+      if (this.peek() === Lexer.TOK_END) this.consume(Lexer.TOK_END);
+      else {
+        this.consume(Lexer.TOK_ELSE);
+        let stmtsElse = this.stmtList();
+        this.consume(Lexer.TOK_END);
+        stmts.push(
+          new ASTNode({ nodetype: Parser.AST_ELSE, stmts: stmtsElse })
+        );
+      }
+      return new ASTNode({ nodetype: Parser.AST_IF, exp: exp, stmts: stmts });
+    } else if (this.peek() === Lexer.TOK_PRINT) {
+      this.consume(Lexer.TOK_PRINT);
+      exp = this.expr();
+      this.consume(Lexer.TOK_SEMI);
+      return new ASTNode({ nodetype: Parser.AST_PRINT, exp: exp });
     }
+  }
+  expr() {
+    let t = this.term();
+    let tRight;
+    let nextToken = this.peek();
+    let opToks = [
+      Lexer.TOK_PLUS,
+      Lexer.TOK_MINUS,
+      Lexer.TOK_AND,
+      Lexer.TOK_OR,
+      Lexer.TOK_EQLS,
+      Lexer.TOK_NEQLS,
+      Lexer.TOK_LTHAN,
+      Lexer.GTHAN,
+    ];
+    while (this.tokens.length && opToks.indexOf(this.peek()) > -1) {
+      if (nextToken === Lexer.TOK_PLUS) {
+        this.consume(Lexer.TOK_PLUS);
+        tRight = this.term();
+        t = new ASTNode({
+          nodetype: Parser.AST_BINOP,
+          operator: "+",
+          left: t,
+          right: tRight,
+        });
+      } else if (nextToken === Lexer.TOK_MINUS) {
+        this.consume(Lexer.TOK_MINUS);
+        tRight = this.term();
+        t = new ASTNode({
+          nodetype: Parser.AST_BINOP,
+          operator: "-",
+          left: t,
+          right: tRight,
+        });
+      } else if (nextToken === Lexer.TOK_OR) {
+        this.consume(Lexer.TOK_OR);
+        tRight = this.term();
+        t = new ASTNode({nodetype: Parser.AST_BINOP, operator: "||", left: t,  right: tRight});
+      } else if (nextToken == Lexer.TOK_AND) {
+        this.consume(Lexer.TOK_AND);
+        tRight = this.term();
+        t = new ASTNode({nodetype: Parser.AST_BINOP, operator: "&&", left: t, right: tRight});
+      } else if (nextToken === Lexer.TOK_EQLS) {
+          this.consume(Lexer.TOK_EQLS);
+          tRight = this.term();
+          t = new ASTNode({nodetype: Parser.AST_BINOP, operator: "==", left: t, right: tRight});
+      } else if (nextToken === Lexer.TOK_NEQLS) {
+          this.consume(Lexer.TOK_NEQLS);
+          tRight = this.term();
+          t = new ASTNode({nodetype: Parser.AST_BINOP, operator: "!=", left: t, right: tRight});
+      } else if (nextToken === Lexer.TOK_LTHAN) {
+          this.consume(Lexer.TOK_LTHAN);
+          tRight = this.term();
+          t = new ASTNOde({nodetype: Parser.AST_BINOP, operator: "<", left: t, right: tRight});
+      } else if (nextToken === Lexer.TOK_GTHAN) {
+          this.consume(Lexer.TOK_GTHAN);
+          tRight = this.term();
+          t = new ASTNode({nodetype: Parser.AST_BINOP, operator: ">", left: t, right: tRight});
+      }
+      nextToken = this.peek();
+    }
+    return t;
+  }
+
+  term() {
+    let f = this.factor();
+    let fRight;
+    let nextToken = this.peek();
+    while (this.tokens.length && nextToken === Lexer.TOK_STAR || nextToken === Lexer.TOK_SLASH || nextToken === Lexer.TOK_MOD) {
+      if (nextToken === Lexer.TOK_STAR) {
+        this.consume(Lexer.TOK_STAR);
+        fRight = this.factor();
+        f = new ASTNode({nodetype: Parser.AST_BINOP, operator: "*", left: f, right: fRight});
+      } else if (nextToken === Lexer.TOK_SLASH) {
+        this.consume(Lexer.TOK_SLASH);
+        fRight = this.factor();
+        f = new ASTNode({nodetype: Parser.AST_BINOP, operator: "/", left: f, right: fRight}); 
+      } else if (nextToken === Lexer.TOK_MOD) {
+        this.consume(Lexer.TOK_MOD);
+        fRight = this.factor();
+        f = new ASTNode({nodetype: Parser.AST_BINOP, operator: "%", left: f, right: fRigth});
+      } 
+      nextToken = this.peek();
+    }
+    return f;
+  }
+
+  factor() {
+    let f;
+    if (this.peek() === Lexer.TOK_INT) {
+      f = this.consume(Lexer.TOK_INT);
+      return new ASTNode({nodetype: Parser.AST_INT, value: f.value});
+    } else if (this.peek() === Lexer.TOK_BOOL) {
+      f = this.consume(Lexer.TOK_BOOL);
+      return new ASTNode({nodetype: Parser.AST_BOOL, value: f.value});
+    } else if (this.peek() === Lexer.TOK_STRING) {
+      f = this.consume(Lexer.TOK_STRING);
+      return new ASTNode({nodetype: Parser.AST_STRING, value: f.value}); 
+    } else if (this.peek() === Lexer.TOK_FLOAT) {
+      f = this.consume(Lexer.TOK_FLOAT);
+      return new ASTNode({nodetype: Parser.AST_FLOAT, value: f.value });
+    } else if (this.peek() === Lexer.TOK_ID) {
+      f = this.consume(Lexer.TOK_ID);
+      return new ASTNode({nodetype: Parser.AST_ID, value: f.value});
+    } else if (this.peek() === Lexer.TOK_LPAREN) {
+      this.consume(Lexer.TOK_LPAREN);
+      let e = this.expr();
+      this.consume(Lexer.TOK_RPAREN);
+      return e;
+    }
+  }
+
+  nextToken() {
+    return this.tokens.shift();
+  }
+
+  peek() {
+    return this.tokens.length ? this.tokens[0].type : null;
+  }
+
+  consume() {
+    if (!this.tokens.length) {
+      throw new Error("Expecting a token but EOF found");
+  } if (tokType === this.peek()) {
+    return thi.nextToken();
+  } else {
+    throw new Error(`Unexpected Token ${this.tokens[0].value}`);
   }
 }
