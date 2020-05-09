@@ -100,63 +100,63 @@ var Lexer = /*#__PURE__*/function () {
     _defineProperty(this, "TOK_PRINT", 42);
 
     _defineProperty(this, "KEYWORDS", {
-      "while": {
+      'while': {
         type: this.TOK_WHILE,
         value: "while"
       },
-      "for": {
+      'for': {
         type: this.TOK_FOR,
         value: "for"
       },
-      end: {
+      'end': {
         type: this.TOK_END,
         value: "end"
       },
-      "do": {
+      'do': {
         type: this.TOK_DO,
         value: "do"
       },
-      "int": {
+      'int': {
         type: this.TOK_TYPE,
         value: "int"
       },
-      "float": {
+      'float': {
         type: this.TOK_TYPE,
         value: "float"
       },
-      string: {
+      'string': {
         type: this.TOK_TYPE,
         value: "string"
       },
-      bool: {
+      'bool': {
         type: this.TOK_TYPE,
         value: "bool"
       },
-      "if": {
+      'if': {
         type: this.TOK_IF,
         value: "if"
       },
-      "else": {
+      'else': {
         type: this.TOK_ELSE,
         value: "else"
       },
-      "true": {
+      'true': {
         type: this.TOK_BOOL,
         value: "true"
       },
-      "false": {
+      'false': {
         type: this.TOK_BOOL,
         value: "false"
       },
-      "var": {
+      'var': {
         type: this.TOK_VAR,
         value: "var"
       },
-      func: {
+      'func': {
         type: this.TOK_FUNC,
         value: "func"
       },
-      print: {
+      'print': {
         type: this.TOK_PRINT,
         value: "print"
       }
@@ -218,7 +218,7 @@ var Lexer = /*#__PURE__*/function () {
               value: "=="
             });
           } else tokens.push({
-            type: this_TOK_EQ,
+            type: this.TOK_EQ,
             value: "="
           });
         } else if (ch === ">") {
@@ -295,9 +295,9 @@ var Lexer = /*#__PURE__*/function () {
           this.index--;
         } else if (this.isIdent(ch)) {
           id = this.readIdent(input);
-          if (has.call(KEYWORDS, id)) tokens.push({
-            type: KEYWORDS[id].type,
-            value: KEYWORDS[id].value
+          if (has.call(this.KEYWORDS, id)) tokens.push({
+            type: this.KEYWORDS[id].type,
+            value: this.KEYWORDS[id].value
           });else tokens.push({
             type: this.TOK_ID,
             value: id

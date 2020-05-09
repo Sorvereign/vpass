@@ -43,27 +43,27 @@ export default class Lexer {
   TOK_PRINT = 42;
 
   KEYWORDS = {
-    while: { type: this.TOK_WHILE, value: "while" },
-    for: { type: this.TOK_FOR, value: "for" },
-    end: { type: this.TOK_END, value: "end" },
-    do: { type: this.TOK_DO, value: "do" },
-    int: { type: this.TOK_TYPE, value: "int" },
-    float: { type: this.TOK_TYPE, value: "float" },
-    string: { type: this.TOK_TYPE, value: "string" },
-    bool: { type: this.TOK_TYPE, value: "bool" },
-    if: { type: this.TOK_IF, value: "if" },
-    else: { type: this.TOK_ELSE, value: "else" },
-    true: { type: this.TOK_BOOL, value: "true" },
-    false: { type: this.TOK_BOOL, value: "false" },
-    var: { type: this.TOK_VAR, value: "var" },
-    func: { type: this.TOK_FUNC, value: "func" },
-    print: { type: this.TOK_PRINT, value: "print" },
+    'while': { type: this.TOK_WHILE, value: "while" },
+    'for': { type: this.TOK_FOR, value: "for" },
+    'end': { type: this.TOK_END, value: "end" },
+    'do': { type: this.TOK_DO, value: "do" },
+    'int': { type: this.TOK_TYPE, value: "int" },
+    'float': { type: this.TOK_TYPE, value: "float" },
+    'string': { type: this.TOK_TYPE, value: "string" },
+    'bool': { type: this.TOK_TYPE, value: "bool" },
+    'if': { type: this.TOK_IF, value: "if" },
+    'else': { type: this.TOK_ELSE, value: "else" },
+    'true': { type: this.TOK_BOOL, value: "true" },
+    'false': { type: this.TOK_BOOL, value: "false" },
+    'var': { type: this.TOK_VAR, value: "var" },
+    'func': { type: this.TOK_FUNC, value: "func" },
+    'print': { type: this.TOK_PRINT, value: "print" },
   };
 
   lex(input) {
     let tokens = [];
     let id;
-    const has = Object.prototype.hasOwnProperty;
+    let has = Object.prototype.hasOwnProperty;
     this.index = 0;
     while (this.index < input.length) {
       let ch = input.charAt(this.index);
@@ -84,7 +84,7 @@ export default class Lexer {
         if (this.peek(input) === "=") {
           this.index++;
           tokens.push({ type: this.TOK_EQLS, value: "==" });
-        } else tokens.push({ type: this_TOK_EQ, value: "=" });
+        } else tokens.push({ type: this.TOK_EQ, value: "=" });
       } else if (ch === ">") {
         if (this.peek(input) === "=") {
           this.index++;
@@ -121,8 +121,8 @@ export default class Lexer {
         this.index--;
       } else if (this.isIdent(ch)) {
         id = this.readIdent(input);
-        if (has.call(KEYWORDS, id))
-          tokens.push({ type: KEYWORDS[id].type, value: KEYWORDS[id].value });
+        if (has.call(this.KEYWORDS, id))
+          tokens.push({ type: this.KEYWORDS[id].type, value: this.KEYWORDS[id].value });
         else tokens.push({ type: this.TOK_ID, value: id });
         this.index--;
       } else if (ch === '"') {

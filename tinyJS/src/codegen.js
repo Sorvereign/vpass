@@ -1,6 +1,7 @@
 import Parser from "./parser";
 
 export default class CodeGenerator {
+  parser  = new Parser();
   generate(nodes) {
     let program = "";
     let self = this;
@@ -13,27 +14,27 @@ export default class CodeGenerator {
   generateNode(node) {
     let result = "";
     switch (node.nodetype) {
-      case Parser.AST_DECL:
+      case this.parser.AST_DECL:
         result += `var ${node.left.value} = ${this.generateNode(
           node.right
         )} \n`;
         break;
-      case Parser.AST_BINOP:
+      case this.parser.AST_BINOP:
         result += `( ${this.generateNode(node.left)} ${
           node.operator
         } ${this.generateNode(node.right)} )`;
         break;
-      case Parser.AST_ASSIGN:
+      case this.parser.AST_ASSIGN:
         result += `${node.left.value} = ${this.generateNode(node.right)} \n`;
         break;
-      case Parser.AST_WHILE:
+      case this.parser.AST_WHILE:
         result += `while ${this.generateNode(node.exp)} {\n ${this.generate(
           node.stmts
         )} } \n`;
         break;
-      case Parser.AST_IF:
+      case this.parser.AST_IF:
         let hasElse = !!(
-          node.stmts[node.stmts.length - 1].nodetype === Parser.AST_ELSE
+          node.stmts[node.stmts.length - 1].nodetype === this.parser.AST_ELSE
         );
         if (hasElse) {
           let elseNode = node.stmts.pop();
@@ -45,19 +46,19 @@ export default class CodeGenerator {
             node.stmts
           )} }\n`;
         break;
-      case Parser.AST_PRINT:
+      case this.parser.AST_PRINT:
         result += `if ${this.generateNode(node.exp)} {\n ${this.generate(
           node.stmts
         )}\n }`;
         break;
-      case Parser.AST_PRINT:
+      case this.parser.AST_PRINT:
         result += `console.log(${this.generateNode(node.exp)} ); \n`;
         break;
-      case Parser.AST_ID:
-      case Parser.AST_INT:
-      case Parser.AST_FLOAT:
-      case Parser.AST_BOOL:
-      case Parser.AST_STRING:
+      case this.parser.AST_ID:
+      case this.parser.AST_INT:
+      case this.parser.AST_FLOAT:   
+      case this.parser.AST_BOOL:
+      case this.parser.AST_STRING:
         result += node.value;
         break;
     }

@@ -1,10 +1,13 @@
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
 var _parser = _interopRequireDefault(require("./parser"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -12,29 +15,13 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function () { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-var CodeGenerator = /*#__PURE__*/function (_ref) {
-  _inherits(CodeGenerator, _ref);
-
-  var _super = _createSuper(CodeGenerator);
-
+var CodeGenerator = /*#__PURE__*/function () {
   function CodeGenerator() {
     _classCallCheck(this, CodeGenerator);
 
-    return _super.apply(this, arguments);
+    _defineProperty(this, "parser", new _parser["default"]());
   }
 
   _createClass(CodeGenerator, [{
@@ -42,7 +29,7 @@ var CodeGenerator = /*#__PURE__*/function (_ref) {
     value: function generate(nodes) {
       var program = "";
       var self = this;
-      nodes.map(function (node) {
+      nodes.forEach(function (node) {
         program += self.generateNode(node);
       });
       return program;
@@ -53,16 +40,54 @@ var CodeGenerator = /*#__PURE__*/function (_ref) {
       var result = "";
 
       switch (node.nodetype) {
-        case _parser["default"].AST_DECL:
-          result += "var ".concat(node.left.value, " = ").concat(this.generateNode(node.rigth), " \n");
+        case this.parser.AST_DECL:
+          result += "var ".concat(node.left.value, " = ").concat(this.generateNode(node.right), " \n");
           break;
 
-        case _parser["default"].AST_BINOP:
-          result += "( ".concat(this.generateNode(node.left), " ").concat(node.operator, " ").concat(this.generateNode(node.rigth), " )");
+        case this.parser.AST_BINOP:
+          result += "( ".concat(this.generateNode(node.left), " ").concat(node.operator, " ").concat(this.generateNode(node.right), " )");
+          break;
+
+        case this.parser.AST_ASSIGN:
+          result += "".concat(node.left.value, " = ").concat(this.generateNode(node.right), " \n");
+          break;
+
+        case this.parser.AST_WHILE:
+          result += "while ".concat(this.generateNode(node.exp), " {\n ").concat(this.generate(node.stmts), " } \n");
+          break;
+
+        case this.parser.AST_IF:
+          var hasElse = !!(node.stmts[node.stmts.length - 1].nodetype === this.parser.AST_ELSE);
+
+          if (hasElse) {
+            var elseNode = node.stmts.pop();
+            result += "if ".concat(this.generateNode(node.exp), " {\n this.generate(node.stmts)} \n}");
+          } else result += "".concat(this.generateNode(node.exp), " {\n ").concat(this.generate(node.stmts), " }\n");
+
+          break;
+
+        case this.parser.AST_PRINT:
+          result += "if ".concat(this.generateNode(node.exp), " {\n ").concat(this.generate(node.stmts), "\n }");
+          break;
+
+        case this.parser.AST_PRINT:
+          result += "console.log(".concat(this.generateNode(node.exp), " ); \n");
+          break;
+
+        case this.parser.AST_ID:
+        case this.parser.AST_INT:
+        case this.parser.AST_FLOAT:
+        case this.parser.AST_BOOL:
+        case this.parser.AST_STRING:
+          result += node.value;
           break;
       }
+
+      return result;
     }
   }]);
 
   return CodeGenerator;
-}(null);
+}();
+
+exports["default"] = CodeGenerator;

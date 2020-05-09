@@ -1,6 +1,13 @@
 import Parser from "./parser";
+import Scope from "./scope";
 
 export default class SymbolTable {
+    
+    constructor() {
+    this.stack = [new Scope()];
+    this.scope;
+  }
+   
   build(nodes) {
     let self = this;
     nodes.forEach((node) => {
@@ -9,6 +16,8 @@ export default class SymbolTable {
   }
 
   analyzeNode(node) {
+    console.log(this.scopeSymbolTable());
+    console.log(this.peek());
     switch (node.nodetype) {
       case Parser.AST_DECL:
         this.putSymbol(node.left.value, node.left.type);
@@ -42,8 +51,8 @@ export default class SymbolTable {
   }
 
   scopeSymbolTable() {
-    let scope = new Scope(this.peek());
-    this.stack.push(scope);
+    this.scope = new Scope(this.peek());
+    this.stack.push(this.scope);
   }
 
   putSymbol(symbol, type) {
@@ -60,24 +69,5 @@ export default class SymbolTable {
 
   pop() {
     return this.stack.pop();
-  }
-}
-
-export class Scope {
-  constructor(parent) {
-    this.table = {};
-    this.parent = parent;
-  }
-
-  putSymbol(symbol, type) {
-    if (this.getSymbol(symbol) !== undefined)
-      throw new Error(`Can't redeclare variable ` + symbol);
-    this.table[symbol] = type;
-  }
-
-  getSymbol(symbol) {
-    if (this.table[symbol] === undefined && this.parent)
-      return this.parent.getSymbol(symbol);
-    return this.table[symbol];
   }
 }
